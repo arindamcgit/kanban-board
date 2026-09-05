@@ -69,8 +69,16 @@ Drag-and-drop is now feature-complete: within-column reorder + cross-column move
 
 24. **Frontend env-driven API URL** — introduced `client/.env.local` (`VITE_API_URL=http://localhost:5000`, gitignored via the existing `*.local` rule) and `const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'` in `App.jsx`; all 6 hardcoded `http://localhost:5000` fetch calls now use `${API_URL}`. Verified still works identically against local dev.
 
-## Up next
-- Commit this change, then deploy frontend to Vercel with `VITE_API_URL` set to the Render backend URL.
+25. **Frontend deployed to Vercel** — root directory `client`, auto-detected Vite preset, `VITE_API_URL` set to the Render backend URL. Live at `https://kanban-board-pi-steel.vercel.app/`. Verified fully working in the browser: board loads real data from Atlas via Render, and add/delete/drag-and-drop all work identically to local dev — confirming CORS (still the permissive `cors()` default) correctly allows the Vercel origin.
+
+**Deployment complete.** Full stack live end-to-end: Vercel (frontend) → Render (backend) → MongoDB Atlas (database).
+
+## Up next (all optional — v1 is built and deployed)
+- Make Lists themselves draggable/reorderable (column reordering).
+- Rollback handling if a drag's PUT request fails (currently pure optimistic update, no error recovery).
+- Extend Card fields (description, due date, labels) per the original v1 scope note.
+- Tighten CORS to the specific Vercel origin instead of the current permissive default, if desired.
+- Auth, or other stretch goals.
 - (Later, optional) Make Lists themselves draggable/reorderable (column reordering).
 - (Later, optional) Rollback handling if a drag's PUT request fails (currently pure optimistic update, no error recovery).
 - (Later, optional) Extend Card fields (description, due date, labels) per the original v1 scope note.
