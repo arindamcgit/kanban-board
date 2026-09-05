@@ -77,5 +77,8 @@ Real bug hit: cross-list dragging silently didn't work at all — `handleDragOve
 ## Git's three areas: working directory, staging area, repository
 Working directory = actual files on disk as you edit them. Staging area (the "index") = a holding area where you explicitly choose which changes go into the *next* commit (`git add`) — this intentional staging step is a key difference from some other VCS tools. Repository = the permanent commit history; a commit is a snapshot of whatever was staged at that moment, with a message. Flow: edit → `git add` (stage) → `git commit` (permanently record). Common "explain how git works" interview question.
 
+## OS-level DNS resolution vs. an application's own resolver (Node's `c-ares`)
+Real bug hit connecting to MongoDB Atlas: `mongodb+srv://` connection strings require an `SRV` DNS record lookup. Node.js does this lookup itself via a bundled library (`c-ares`), which is a *separate code path* from the OS-level DNS resolution that tools like `nslookup` or a browser use. Symptom: `nslookup -type=SRV ...` resolved the record correctly, but the app still failed with `querySrv ECONNREFUSED` — same record, same network, different resolver, different result. Cause: a private/local DNS server (e.g., a router or ISP resolver) answered the OS's query style fine but refused Node's specific query. Fix: force Node to use a known-reliable public DNS server via `dns.setServers(['8.8.8.8', '8.8.4.4'])`, bypassing the problematic local resolver just for the app's own lookups. Good interview point: most people assume "DNS is DNS" — this is a concrete counterexample worth having in your back pocket.
+
 ---
 *Updated as new topics come up — see `PROGRESS.md` for the build log.*

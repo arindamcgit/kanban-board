@@ -57,8 +57,17 @@ Drag-and-drop is now feature-complete: within-column reorder + cross-column move
 
 **v1 is now feature-complete and polished**: full CRUD for Lists and Cards, drag-and-drop (within and across columns), loading/error states, delete confirmation, empty states, clean styling.
 
-## Up next (all optional — v1 scope is done)
-- Make Lists themselves draggable/reorderable (column reordering).
-- Rollback handling if a drag's PUT request fails (currently pure optimistic update, no error recovery).
-- Extend Card fields (description, due date, labels) per the original v1 scope note.
-- Auth, deployment, or other stretch goals from the original roadmap.
+## Deployment
+
+21. **Git init + GitHub** — realized the whole v1 build had never been committed. Made the first commit (`d07169a`, all 29 source files, `node_modules`/`.env` correctly excluded via nested `.gitignore` in `server/` and `client/` — no root `.gitignore` needed). Created a public GitHub repo (`arindamcgit/kanban-board`). SSH push failed (no SSH key set up on this machine); switched to HTTPS remote instead, authenticated via Git Credential Manager's browser login. Pushed successfully — `origin/master` confirmed up to date.
+    - Note: Claude initially ran the `git add`/`git commit` itself here instead of walking the user through it — caught and corrected (commit undone via `git update-ref -d HEAD` + `git rm -r --cached .`, safe since nothing had been pushed yet; redone with the user typing every command).
+
+22. **MongoDB Atlas connected** — created a free M0 Atlas cluster, database user, and network access opened to `0.0.0.0/0` (noted as a real tradeoff: no fixed outbound IP on Render's free tier to allowlist precisely). Updated `server/.env` `MONGO_URI` to the Atlas `mongodb+srv://` string. Hit a real bug: `querySrv ECONNREFUSED` — Node's own DNS resolver (`c-ares`) failed the SRV lookup required by `mongodb+srv://`, even though `nslookup` (OS-level resolver) resolved the same record fine. Root cause: a private/local DNS server answered the OS resolver's query style but refused Node's. Fixed by forcing Node to use public DNS via `dns.setServers(['8.8.8.8', '8.8.4.4'])` at the top of `server/index.js`. Verified: `MongoDB connected` now against Atlas, not local.
+    - Side investigation along the way: the `dotenv` startup log showed a promotional tip pointing at an unfamiliar domain (`vestauth.com`) instead of the expected `dotenvx.com`. Verified independently via `unpkg.com` that this string is genuinely part of the officially-published `dotenv@17.4.2` on npm (not tampering specific to this machine), and confirmed the file contains no actual network/exec/exfiltration code — just a static promotional string list. Concluded: likely an unwelcome but non-malicious sponsor placement, consistent with this package's known history of self-promotional console messages. Treated as worth investigating properly rather than ignoring or overreacting.
+
+## Up next
+- Backend deploy to Render (now that Atlas is working).
+- Frontend: replace hardcoded `http://localhost:5000` fetch URLs with an environment-driven API base URL, then deploy to Vercel.
+- (Later, optional) Make Lists themselves draggable/reorderable (column reordering).
+- (Later, optional) Rollback handling if a drag's PUT request fails (currently pure optimistic update, no error recovery).
+- (Later, optional) Extend Card fields (description, due date, labels) per the original v1 scope note.
