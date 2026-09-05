@@ -4,6 +4,7 @@ import List from './components/List';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function App() {
   const [lists, setLists] = useState([]);
@@ -14,8 +15,8 @@ function App() {
 
   useEffect(() => {
     Promise.all([
-      fetch('http://localhost:5000/api/lists').then((res) => res.json()),
-      fetch('http://localhost:5000/api/cards').then((res) => res.json()),
+      fetch(`${API_URL}/api/lists`).then((res) => res.json()),
+      fetch(`${API_URL}/api/cards`).then((res) => res.json()),
     ])
       .then(([listsData, cardsData]) => {
         setLists(listsData);
@@ -68,7 +69,7 @@ function App() {
     setCards((prev) => prev.map((c) => reordered.find((r) => r._id === c._id) || c));
 
     reordered.forEach((c) => {
-      fetch(`http://localhost:5000/api/cards/${c._id}`, {
+      fetch(`${API_URL}/api/cards/${c._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order: c.order, listId: c.listId }),
@@ -81,7 +82,7 @@ function App() {
     e.preventDefault();
     if (!newListTitle.trim()) return;
 
-    const res = await fetch('http://localhost:5000/api/lists', {
+    const res = await fetch(`${API_URL}/api/lists`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: newListTitle, order: lists.length }),
@@ -93,21 +94,21 @@ function App() {
 
   const handleDeleteList = async (listId) => {
     if (!window.confirm('Delete this list and all its cards?')) return;
-    await fetch(`http://localhost:5000/api/lists/${listId}`, { method: 'DELETE' });
+    await fetch(`${API_URL}/api/lists/${listId}`, { method: 'DELETE' });
     setLists(lists.filter((l) => l._id !== listId));
     setCards(cards.filter((c) => c.listId !== listId));
   };
 
   const handleDeleteCard = async (cardId) => {
     if (!window.confirm('Delete this card?')) return;
-    await fetch(`http://localhost:5000/api/cards/${cardId}`, { method: 'DELETE' });
+    await fetch(`${API_URL}/api/cards/${cardId}`, { method: 'DELETE' });
     setCards(cards.filter((c) => c._id !== cardId));
   };
 
   const handleAddCard = async (listId, title) => {
     const listCards = cards.filter((c) => c.listId === listId);
 
-    const res = await fetch('http://localhost:5000/api/cards', {
+    const res = await fetch(`${API_URL}/api/cards`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, order: listCards.length, listId }),
